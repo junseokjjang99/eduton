@@ -2,9 +2,6 @@ import json
 import os
 import datetime
 import random
-import streamlit as st
-
-# --- 1. 데이터 정의 (Data Definitions) ---
 
 # 쓰레기 종류 다국어 버전
 waste_data = {
@@ -110,101 +107,185 @@ waste_data = {
     }
 }
 
-# 다국어 메시지
+#퀴즈 데이터
+quiz_data = [
+    {
+        "question": {
+            "ko": "플라스틱 병이 분해되려면 몇 년이 걸릴까요?",
+            "en": "How many years does it take for a plastic bottle to decompose?",
+            "zh": "一个塑料瓶需要多少年才能分解？"
+        },
+        "answer": "450"
+    },
+    {
+        "question": {
+            "ko": "종이가 분해되려면 몇 주가 걸릴까요?",
+            "en": "How many weeks does it take for a paper to decompose?",
+            "zh": "纸张需要几周才能分解？"
+        },
+        "answer": "4"
+    },
+    {
+        "question": {
+            "ko": "담배꽁초가 분해되려면 몇 년이 걸릴까요?",
+            "en": "How many years does it take for a cigarette butt to decompose?",
+            "zh": "一个烟蒂需要多少年才能分解？"
+        },
+        "answer": "12"
+    },
+    {
+        "question": {
+            "ko": "유리가 분해되려면 몇 년이 걸릴까요?",
+            "en": "How many years does it take for a glass to decompose?",
+            "zh": "玻璃需要多少年才能分解?"
+        },
+        "answer": "1000000"
+    },
+    {
+        "question": {
+            "ko": "환경 보호의 3R 중 첫 번째는 무엇인가요? (줄이기/재사용/재활용)",
+            "en": "What is the first of the 3Rs for the environment? (Reduce/Reuse/Recycle)",
+            "zh": "环保3R中的第一个是什么？（减少/重复使用/回收）"
+        },
+        "answer": {
+            "ko": "줄이기",
+            "en": "Reduce",
+            "zh": "减少"
+        }
+    },
+    {
+        "question": {
+            "ko": "지구의 대체 행성이 있다(O/X)?",
+            "en": "Is there an alternative planet to Earth? (O/X)",
+            "zh": "地球有替代行星吗？（O/X）"
+        },
+        "answer": "X"
+    },
+    {
+        "question": {
+            "ko": "전기 대신 자연광을 이용하는 행동은 에너지를 (절약한다/낭비한다)?",
+            "en": "Using natural light instead of electricity (saves/wastes) energy?",
+            "zh": "使用自然光代替电能是（节约/浪费）能源？"
+        },
+        "answer": {
+            "ko": "절약한다",
+            "en": "saves",
+            "zh": "节约"
+        }
+    },
+    {
+        "question": {
+            "ko": "비닐봉지의 평균 분해 기간은 약 몇 년인가요?",
+            "en": "About how many years does it take for a plastic bag to decompose?",
+            "zh": "一个塑料袋大约需要多少年才能分解？"
+        },
+        "answer": "1000"
+    },
+    {
+        "question": {
+            "ko": "지구의 해수면 상승 주요 원인은? (빙하가 녹음/비가 많이 옴/화산 폭발)",
+            "en": "Main cause of rising sea levels? (Melting glaciers/More rain/Volcano eruption)",
+            "zh": "海平面上升的主要原因？（冰川融化/降雨多/火山爆发）"
+        },
+        "answer": {
+            "ko": "빙하가 녹음",
+            "en": "Melting glaciers",
+            "zh": "冰川融化"
+        }
+    },
+    {
+        "question": {
+            "ko": "기후 변화의 주요 원인 중 하나는? (이산화탄소/질소/수소)",
+            "en": "One main cause of climate change? (Carbon dioxide/Nitrogen/Hydrogen)",
+            "zh": "气候变化的主要原因之一？（二氧化碳/氮气/氢气）"
+        },
+        "answer": {
+            "ko": "이산화탄소",
+            "en": "Carbon dioxide",
+            "zh": "二氧化碳"
+        }
+    },
+    {
+        "question": {
+            "ko": "가장 환경 친화적인 운송 수단은? (자전거/자동차/비행기)",
+            "en": "Which is the most eco-friendly transport? (Bicycle/Car/Airplane)",
+            "zh": "最环保的交通方式是？（自行车/汽车/飞机）"
+        },
+        "answer": {
+            "ko": "자전거",
+            "en": "Bicycle",
+            "zh": "自行车"
+        }
+    },
+    {
+        "question": {
+            "ko": "에너지를 아끼는 행동은? (대기전력 차단/에어컨 계속 켜기/TV 켜두기)",
+            "en": "Which action saves energy? (Unplug devices/Keep AC on/Leave TV on)",
+            "zh": "节约能源的做法是？（拔掉插头/一直开空调/开着电视）"
+        },
+        "answer": {
+            "ko": "대기전력 차단",
+            "en": "Unplug devices",
+            "zh": "拔掉插头"
+        }
+    },
+    {
+        "question": {
+            "ko": "휴지를 대신할 수 있는 친환경 대안은?",
+            "en": "What is an eco-friendly alternative to tissues?",
+            "zh": "替代纸巾的环保选择是什么？"
+        },
+        "answer": {
+            "ko": "손수건",
+            "en": "Handkerchief",
+            "zh": "手帕"
+        }
+    }
+]
+# 파일 경로
+base_dir = os.path.dirname(os.path.abspath(__file__))
+history_file = os.path.join(base_dir, "waste_history.json")
+settings_file = os.path.join(base_dir, "settings.json")
+
+# 기본 설정
+current_language = "ko"
+
 messages = {
     "ko": {
         "welcome": "🌿 환경을 위한 작은 실천, 시작합니다!",
-        "select_menu": "메뉴를 선택하세요:",
+        "select_menu": "\n1. 쓰레기 입력\n2. 오늘 배출량 및 점수 확인\n3. 하루 목표 설정\n4. 환경 퀴즈\n5. 종료\n선택하세요: ",
         "goodbye": "👋 이용해 주셔서 감사합니다!",
         "invalid_number": "❌ 숫자를 입력해주세요.",
         "invalid_menu": "❌ 올바른 메뉴 번호를 선택해주세요.",
         "input_count": "몇 {unit}를 버렸나요? ",
         "daily_target_prompt": "하루 CO₂ 배출 목표(kg)를 입력하세요: ",
         "target_set": "✅ 목표가 설정되었습니다.",
-        "over_target": "⚠️ 설정한 목표({target} kg)를 초과했습니다!",
-        "available_waste_types": "가능한 쓰레기 종류:",
-        "enter_waste_type": "쓰레기 종류를 선택하세요:",
-        "waste_not_registered": "❌ 등록되지 않은 쓰레기 종류입니다.",
-        "enter_positive_number": "❌ 0 이상의 숫자를 입력하세요.",
-        "today_co2_emission": "오늘 누적 CO₂ 배출량:",
-        "today_score": "오늘 점수:",
-        "result_title": "📊 결과",
-        "name_label": "-",
-        "weight_label": "- 무게:",
-        "co2_emitted_label": "- 배출된 CO₂:",
-        "decompose_time_label": "- 분해 시간:",
-        "eco_tip_label": "- 🌱 친환경 대안:",
-        "select_language_title": "🌐 언어를 선택하세요:",
-        "lang_ko": "한국어",
-        "lang_en": "영어",
-        "lang_zh": "중국어",
-        "invalid_language_choice": "❌ 잘못된 선택입니다. 기본값: 한국어로 설정됩니다.",
-        "add_waste_button": "쓰레기 입력",
-        "set_target_button": "목표 설정"
+        "over_target": "⚠️ 설정한 목표({target} kg)를 초과했습니다!"
     },
     "en": {
         "welcome": "🌿 Let's start a small action for the environment!",
-        "select_menu": "Select menu:",
+        "select_menu": "\n1. Enter waste\n2. View today's emissions and score\n3. Set daily target\n4. Eco Quiz\n5. Exit\nChoose: ",
         "goodbye": "👋 Thank you for using!",
         "invalid_number": "❌ Please enter a number.",
         "invalid_menu": "❌ Invalid menu number.",
         "input_count": "How many {unit}? ",
         "daily_target_prompt": "Enter daily CO₂ target (kg): ",
         "target_set": "✅ Target set.",
-        "over_target": "⚠️ Over daily target ({target} kg)!",
-        "available_waste_types": "Available waste types:",
-        "enter_waste_type": "Select waste type:",
-        "waste_not_registered": "❌ Not registered waste type.",
-        "enter_positive_number": "❌ Enter a number >= 0.",
-        "today_co2_emission": "Today's CO₂ Emissions:",
-        "today_score": "Score:",
-        "result_title": "📊 Result",
-        "name_label": "-",
-        "weight_label": "- Weight:",
-        "co2_emitted_label": "- CO₂ Emitted:",
-        "decompose_time_label": "- Decompose Time:",
-        "eco_tip_label": "- 🌱 Eco Tip:",
-        "select_language_title": "🌐 Select language:",
-        "lang_ko": "Korean",
-        "lang_en": "English",
-        "lang_zh": "Chinese",
-        "invalid_language_choice": "❌ Invalid choice. Default: Korean will be set.",
-        "add_waste_button": "Add Waste",
-        "set_target_button": "Set Target"
+        "over_target": "⚠️ Over daily target ({target} kg)!"
     },
     "zh": {
         "welcome": "🌿 开始为环境做一点小改变吧！",
-        "select_menu": "请选择菜单:",
+        "select_menu": "\n1. 输入垃圾\n2. 查看今日排放量和分数\n3. 设置每日目标\n4. 环保测验\n5. 退出\n请选择: ",
         "goodbye": "👋 感谢您的使用！",
         "invalid_number": "❌ 请输入数字。",
         "invalid_menu": "❌ 菜单编号无效。",
         "input_count": "多少{unit}？",
         "daily_target_prompt": "请输入每日CO₂排放目标(公斤): ",
         "target_set": "✅ 目标已设置。",
-        "over_target": "⚠️ 超过每日目标({target}公斤)！",
-        "available_waste_types": "可用垃圾种类:",
-        "enter_waste_type": "请选择垃圾类型:",
-        "waste_not_registered": "❌ 未注册垃圾类型。",
-        "enter_positive_number": "❌ 输入大于等于0的数字。",
-        "today_co2_emission": "今日累计CO₂排放量:",
-        "today_score": "分数:",
-        "result_title": "📊 结果",
-        "name_label": "-",
-        "weight_label": "- 重量:",
-        "co2_emitted_label": "- 排放的 CO₂:",
-        "decompose_time_label": "- 分解时间:",
-        "eco_tip_label": "- 🌱 环保建议:",
-        "select_language_title": "🌐 选择语言:",
-        "lang_ko": "韩语",
-        "lang_en": "英语",
-        "lang_zh": "中文",
-        "invalid_language_choice": "❌ 选择无效。默认：将设置为韩语。",
-        "add_waste_button": "添加垃圾",
-        "set_target_button": "设置目标"
+        "over_target": "⚠️ 超过每日目标({target}公斤)！"
     }
 }
 
-# 환경 관련 명언 (NameError 해결을 위해 전역 범위에 정의)
 eco_quotes = [
     "The Earth is what we all have in common. - Wendell Berry",
     "작은 변화가 큰 변화를 만듭니다.",
@@ -213,81 +294,58 @@ eco_quotes = [
     "One planet, one chance."
 ]
 
-# --- 2. 파일 경로 및 세션 상태 관리 (File Paths & Session State) ---
-
-# 파일 경로 (Streamlit Cloud에서는 로컬 파일 시스템이 임시적이므로 데이터 지속성을 위한 다른 방안 고려 필요)
-# 여기서는 예시를 위해 현재 디렉토리에 저장하도록 함. 실제 서비스에서는 DB 연동 고려.
-history_file = "waste_history.json"
-settings_file = "settings.json"
-
-# Streamlit 세션을 사용하여 언어 설정 유지
-if 'current_language' not in st.session_state:
-    st.session_state.current_language = "ko" # 기본값
-
-# --- 3. 데이터 로드/저장 함수 (Data Load/Save Functions) ---
-
 def load_history():
-    """쓰레기 배출 기록을 JSON 파일에서 로드합니다."""
     if os.path.exists(history_file):
         with open(history_file, "r", encoding="utf-8") as f:
             return json.load(f)
     return []
 
 def save_history(history):
-    """쓰레기 배출 기록을 JSON 파일에 저장합니다."""
     with open(history_file, "w", encoding="utf-8") as f:
         json.dump(history, f, indent=4, ensure_ascii=False)
 
 def load_settings():
-    """설정 데이터를 JSON 파일에서 로드합니다."""
     if os.path.exists(settings_file):
         with open(settings_file, "r", encoding="utf-8") as f:
             return json.load(f)
     return {"daily_target": None}
 
 def save_settings(settings):
-    """설정 데이터를 JSON 파일에 저장합니다."""
     with open(settings_file, "w", encoding="utf-8") as f:
         json.dump(settings, f, indent=4, ensure_ascii=False)
 
-# --- 4. 핵심 로직 함수 (Core Logic Functions) ---
-
 def calculate_impact(waste_key, count):
-    """
-    쓰레기 종류와 수량을 바탕으로 CO2 배출량 및 분해 시간 등을 계산합니다.
-    """
     data = waste_data[waste_key]
     weight_kg = count * data["unit_weight"]
     co2 = weight_kg * data["co2_per_kg"]
 
-    decompose_time_str = ""
+    decompose = ""
     if "decompose_years" in data:
-        decompose_time_str = f"{data['decompose_years']}년" if st.session_state.current_language == "ko" else \
-                             f"{data['decompose_years']} years" if st.session_state.current_language == "en" else \
-                             f"{data['decompose_years']}年"
+        decompose = f"{data['decompose_years']}년" if current_language=="ko" else \
+                    f"{data['decompose_years']} years" if current_language=="en" else \
+                    f"{data['decompose_years']}年"
     elif "decompose_months" in data:
-        decompose_time_str = f"{data['decompose_months']}개월" if st.session_state.current_language == "ko" else \
-                             f"{data['decompose_months']} months" if st.session_state.current_language == "en" else \
-                             f"{data['decompose_months']}个月"
+        decompose = f"{data['decompose_months']}개월" if current_language=="ko" else \
+                    f"{data['decompose_months']} months" if current_language=="en" else \
+                    f"{data['decompose_months']}个月"
     elif "decompose_weeks" in data:
-        decompose_time_str = f"{data['decompose_weeks']}주" if st.session_state.current_language == "ko" else \
-                             f"{data['decompose_weeks']} weeks" if st.session_state.current_language == "en" else \
-                             f"{data['decompose_weeks']}周"
+        decompose = f"{data['decompose_weeks']}주" if current_language=="ko" else \
+                    f"{data['decompose_weeks']} weeks" if current_language=="en" else \
+                    f"{data['decompose_weeks']}周"
 
     return {
         "waste_key": waste_key,
         "count": count,
-        "unit": data["unit"][st.session_state.current_language],
+        "unit": data["unit"][current_language],
         "weight_kg": weight_kg,
         "co2_emitted": co2,
-        "decompose_time": decompose_time_str,
-        "eco_tip": data["eco_alternative"][st.session_state.current_language],
+        "decompose_time": decompose,
+        "eco_tip": data["eco_alternative"][current_language],
         "date": datetime.datetime.today().strftime("%Y-%m-%d")
     }
 
 def show_result(result):
-    """계산된 쓰레기 배출 결과를 Streamlit에 표시합니다."""
-    lang = st.session_state.current_language
+    lang = current_language
     name = waste_data[result['waste_key']]['names'][lang]
     count = result['count']
     unit = result['unit']
@@ -296,164 +354,169 @@ def show_result(result):
     decompose = result['decompose_time']
     eco_tip = result['eco_tip']
 
-    st.subheader(messages[lang]["result_title"])
-    st.markdown(f"**{messages[lang]['name_label']}** {name}: {count} {unit}")
-    st.markdown(f"**{messages[lang]['weight_label']}** {weight:.3f} kg")
-    st.markdown(f"**{messages[lang]['co2_emitted_label']}** {co2:.2f} kg")
-    st.markdown(f"**{messages[lang]['decompose_time_label']}** {decompose}")
-    st.info(f"**{messages[lang]['eco_tip_label']}** {eco_tip}")
+    if lang == "ko":
+        print("\n📊 결과")
+        print(f"- {name}: {count} {unit}")
+        print(f"- 무게: {weight:.3f} kg")
+        print(f"- 배출된 CO₂: {co2:.2f} kg")
+        print(f"- 분해 시간: {decompose}")
+        print(f"- 🌱 친환경 대안: {eco_tip}")
+    elif lang == "en":
+        print("\n📊 Result")
+        print(f"- {name}: {count} {unit}")
+        print(f"- Weight: {weight:.3f} kg")
+        print(f"- CO₂ Emitted: {co2:.2f} kg")
+        print(f"- Decompose Time: {decompose}")
+        print(f"- 🌱 Eco Tip: {eco_tip}")
+    else: # zh
+        print("\n📊 结果")
+        print(f"- {name}: {count} {unit}")
+        print(f"- 重量: {weight:.3f} kg")
+        print(f"- 排放的 CO₂: {co2:.2f} kg")
+        print(f"- 分解时间: {decompose}")
+        print(f"- 🌱 环保建议: {eco_tip}")
 
 def get_today_co2_and_score(history):
-    """오늘의 총 CO2 배출량과 환경 점수를 계산합니다."""
     today = datetime.datetime.today().strftime("%Y-%m-%d")
     today_records = [r for r in history if r["date"] == today]
     total_co2 = sum(r["co2_emitted"] for r in today_records)
-    # 점수 계산: CO2 배출량이 0이면 100점, 20kg이면 0점 (CO2 1kg당 5점 감점)
     eco_score = max(0, 100 - total_co2 * 5)
     return total_co2, eco_score
 
-# --- 5. Streamlit UI 구성 함수 (Streamlit UI Functions) ---
-
-def select_language_ui():
-    """언어 선택 드롭다운을 사이드바에 표시합니다."""
-    lang_options = {
-        "ko": messages["ko"]["lang_ko"],
-        "en": messages["en"]["lang_en"],
-        "zh": messages["zh"]["lang_zh"]
-    }
+def eco_quiz():
+    quiz = random.choice(quiz_data) 
+    q_text = quiz["question"][current_language]
     
-    # 현재 설정된 언어에 따라 selectbox의 기본값 설정
-    current_lang_display = lang_options[st.session_state.current_language]
-    
-    selected_lang_name = st.sidebar.selectbox(
-        messages[st.session_state.current_language]["select_language_title"],
-        options=list(lang_options.values()),
-        index=list(lang_options.values()).index(current_lang_display),
-        key="language_selector"
-    )
-    
-    # 선택된 언어에 따라 세션 상태 업데이트
-    for key, value in lang_options.items():
-        if value == selected_lang_name:
-            st.session_state.current_language = key
-            break
+    print("\n🌱 " + q_text)
+    user_answer = input({
+        "ko": "정답을 입력하세요: ",
+        "en": "Enter your answer: ",
+        "zh": "请输入答案: "
+    }[current_language]).strip()
 
-def display_today_stats(history, settings):
-    """오늘의 CO2 배출량과 점수를 표시합니다."""
-    lang = st.session_state.current_language
-    today_co2, eco_score = get_today_co2_and_score(history)
-    
-    st.header(messages[lang]["today_co2_emission"].replace(':', ''))
-    col1, col2 = st.columns(2)
-    with col1:
-        st.metric(label=messages[lang]["today_co2_emission"], value=f"{today_co2:.2f} kg")
-    with col2:
-        st.metric(label=messages[lang]["today_score"], value=f"{eco_score:.1f} / 100")
+    correct = quiz["answer"]
+    if isinstance(correct, dict):
+        correct = correct[current_language]
 
-    if settings.get("daily_target") and today_co2 > settings["daily_target"]:
-        st.warning(messages[lang]["over_target"].format(target=settings["daily_target"]))
+    if user_answer == str(correct):
+        print({
+            "ko": "✅ 정답입니다! 잘 하셨어요!",
+            "en": "✅ Correct! Well done!",
+            "zh": "✅ 正确！做得好！"
+        }[current_language])
+    else:
+        print({
+            "ko": f"❌ 아쉽지만 오답입니다. 정답: {correct}",
+            "en": f"❌ Incorrect. The correct answer: {correct}",
+            "zh": f"❌ 答错了。正确答案是: {correct}"
+        }[current_language])
 
-# --- 6. 메인 애플리케이션 로직 (Main Application Logic) ---
+
+def select_language():
+    global current_language
+    print("\n🌐 언어를 선택하세요:")
+    print("1. 한국어\n2. English\n3. 中文")
+    choice = input("선택: ")
+    if choice == "1":
+        current_language = "ko"
+    elif choice == "2":
+        current_language = "en"
+    elif choice == "3":
+        current_language = "zh"
+    else:
+        print("❌ 잘못된 선택입니다. 기본값: 한국어로 설정됩니다.")
+        current_language = "ko"
+
 
 def main():
-    """Streamlit 애플리케이션의 메인 함수."""
-    # 페이지 기본 설정
-    st.set_page_config(layout="centered", page_title="Eco Tracker")
-    
-    # 언어 선택 UI (사이드바)
-    select_language_ui()
-    
-    # 앱 제목 및 랜덤 명언 표시
-    st.title(messages[st.session_state.current_language]["welcome"])
-    st.markdown(f"*{random.choice(eco_quotes)}*") # 명언을 이탤릭체로 표시
+    select_language()
+    print("\n" + random.choice(eco_quotes))
+    print(messages[current_language]["welcome"])
 
     history = load_history()
     settings = load_settings()
 
-    # 사이드바 메뉴 옵션
-    menu_options = [
-        messages[st.session_state.current_language]["add_waste_button"],
-        messages[st.session_state.current_language]["today_co2_emission"].replace(':', ''), # '오늘 누적 CO₂ 배출량'
-        messages[st.session_state.current_language]["set_target_button"]
-    ]
-    
-    choice = st.sidebar.radio(
-        messages[st.session_state.current_language]["select_menu"],
-        menu_options
-    )
+    while True:
+        choice = input(messages[current_language]["select_menu"])
 
-    # --- 메뉴별 화면 구성 ---
+        if choice == "1":
+            print("\n" + (
+                "가능한 쓰레기 종류:" if current_language == "ko"
+                else "Available waste types:" if current_language == "en"
+                else "可用垃圾种类:"
+            ))
 
-    if choice == menu_options[0]: # 쓰레기 입력 / Add Waste / 添加垃圾
-        st.header(messages[st.session_state.current_language]["available_waste_types"])
-        
-        # 쓰레기 종류 드롭다운 선택
-        waste_names_for_select = [data['names'][st.session_state.current_language] for data in waste_data.values()]
-        selected_waste_name = st.selectbox(
-            messages[st.session_state.current_language]["enter_waste_type"],
-            options=waste_names_for_select,
-            key="waste_type_selector"
-        )
+            for key, data in waste_data.items():
+                print(f"- {data['names'][current_language]} ({data['unit'][current_language]})")
 
-        waste_key = None
-        for k, v in waste_data.items():
-            if selected_waste_name == v["names"][st.session_state.current_language]:
-                waste_key = k
-                break
+            name_input = input({
+                "ko": "쓰레기 종류를 입력하세요: ",
+                "en": "Enter waste type: ",
+                "zh": "请输入垃圾类型: "
+            }[current_language]).strip()
 
-        if waste_key:
-            # 수량 입력 (number_input 사용)
-            count = st.number_input(
-                messages[st.session_state.current_language]["input_count"].format(unit=waste_data[waste_key]["unit"][st.session_state.current_language]),
-                min_value=0.0,
-                value=1.0,
-                step=0.1,
-                format="%.1f", # 소수점 한자리까지 표시
-                key="waste_count_input"
-            )
-            
-            # 쓰레기 입력 버튼
-            if st.button(messages[st.session_state.current_language]["add_waste_button"]):
-                if count < 0: # 음수 입력 방지 (min_value로 이미 방지되지만, 명시적 확인)
-                    st.error(messages[st.session_state.current_language]["enter_positive_number"])
-                else:
-                    result = calculate_impact(waste_key, count)
-                    history.append(result)
-                    save_history(history)
-                    show_result(result)
-                    st.success("✅ " + selected_waste_name + " " + str(count) + " " + waste_data[waste_key]["unit"][st.session_state.current_language] + " " + ("입력 완료!" if st.session_state.current_language == "ko" else "added!"))
+            waste_key = None
+            for k, v in waste_data.items():
+                if name_input == v["names"][current_language]:
+                    waste_key = k
+                    break
+            if not waste_key:
+                print({
+                    "ko": "❌ 등록되지 않은 쓰레기 종류입니다.",
+                    "en": "❌ Not registered waste type.",
+                    "zh": "❌ 未注册垃圾类型。"
+                }[current_language])
+                continue
 
-                    # 입력 후 오늘의 통계 업데이트 표시
-                    display_today_stats(history, settings)
+            try:
+                count = float(input(messages[current_language]["input_count"].format(unit=waste_data[waste_key]["unit"][current_language])))
+                if count < 0:
+                    print({
+                        "ko": "❌ 0 이상의 숫자를 입력하세요.",
+                        "en": "❌ Enter a number >= 0.",
+                        "zh": "❌ 输入大于等于0的数字。"
+                    }[current_language])
+                    continue
+            except ValueError:
+                print(messages[current_language]["invalid_number"])
+                continue
+
+            result = calculate_impact(waste_key, count)
+            history.append(result)
+            save_history(history)
+            show_result(result)
+
+            today_co2, eco_score = get_today_co2_and_score(history)
+            print(f"\n📝 { {'ko':'오늘 누적 CO₂ 배출량:', 'en':'Today\'s CO₂ Emissions:', 'zh':'今日累计CO₂排放量:'}[current_language]} {today_co2:.2f} kg")
+            print(f"🏆 { {'ko':'오늘 점수:', 'en':'Score:', 'zh':'分数:'}[current_language]} {eco_score:.1f} / 100")
+
+            if settings.get("daily_target") and today_co2 > settings["daily_target"]:
+                print(messages[current_language]["over_target"].format(target=settings["daily_target"]))
+
+        elif choice == "2":
+            today_co2, eco_score = get_today_co2_and_score(history)
+            print(f"\n📝 { {'ko':'오늘 누적 CO₂ 배출량:', 'en':'Today\'s CO₂ Emissions:', 'zh':'今日累计CO₂排放量:'}[current_language]} {today_co2:.2f} kg")
+            print(f"🏆 { {'ko':'오늘 점수:', 'en':'Score:', 'zh':'分数:'}[current_language]} {eco_score:.1f} / 100")
+
+        elif choice == "3":
+            try:
+                target = float(input(messages[current_language]["daily_target_prompt"]))
+                settings["daily_target"] = target
+                save_settings(settings)
+                print(messages[current_language]["target_set"])
+            except ValueError:
+                print(messages[current_language]["invalid_number"])
+
+        elif choice == "4": # Moved eco_quiz to be a direct menu option
+            eco_quiz()
+
+        elif choice == "5":
+            print(messages[current_language]["goodbye"])
+            break
+
         else:
-            st.error(messages[st.session_state.current_language]["waste_not_registered"])
-
-    elif choice == menu_options[1]: # 오늘 배출량 및 점수 확인 / View today's emissions and score / 查看今日排放量和分数
-        display_today_stats(history, settings)
-
-    elif choice == menu_options[2]: # 하루 목표 설정 / Set daily target / 设置每日目标
-        st.header(messages[st.session_state.current_language]["daily_target_prompt"].replace(':', ''))
-        
-        # 현재 설정된 목표를 기본값으로 표시
-        current_target = settings.get("daily_target")
-        target_value = float(current_target) if current_target is not None else 0.0
-
-        target = st.number_input(
-            messages[st.session_state.current_language]["daily_target_prompt"],
-            min_value=0.0,
-            value=target_value,
-            step=0.1,
-            format="%.2f",
-            key="daily_target_input"
-        )
-        if st.button(messages[st.session_state.current_language]["set_target_button"]):
-            settings["daily_target"] = target
-            save_settings(settings)
-            st.success(messages[st.session_state.current_language]["target_set"])
-            # 목표 설정 후 오늘의 통계 업데이트 표시 (선택 사항)
-            display_today_stats(history, settings)
-
-# --- 7. 앱 실행 (Run App) ---
+            print(messages[current_language]["invalid_menu"])
 
 if __name__ == "__main__":
     main()
+    input("\nPress Enter to exit...")
